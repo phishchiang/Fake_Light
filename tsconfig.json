@@ -8,8 +8,8 @@
     "skipLibCheck": true,
 
     /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    "moduleResolution": "Node", // "bundler" is default; Netlify deploy
+    // "allowImportingTsExtensions": true, // Netlify deploy
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
