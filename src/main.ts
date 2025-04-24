@@ -31,10 +31,14 @@ const gui = new GUI();
 // GUI parameters
 const params: { 
   type: 'arcball' | 'WASD';
-  uTestValue: number
+  uLowerRadiusValue: number;
+  uAllRadiusValue: number;
+  uLengthValue: number;
 } = {
   type: 'arcball',
-  uTestValue: 1.0,
+  uLowerRadiusValue: 1.0,
+  uAllRadiusValue: 1.0,
+  uLengthValue: 1.0,
 };
 
 // Callback handler for camera mode
@@ -45,14 +49,21 @@ gui.add(params, 'type', ['arcball', 'WASD']).onChange(() => {
   cameras[newCameraType].matrix = cameras[oldCameraType].matrix;
   oldCameraType = newCameraType;
 });
-gui.add(params, 'uTestValue', 0.0, 1.0).step(0.01).onChange((value) => {
+gui.add(params, 'uLowerRadiusValue', 0.0, 1.0).step(0.01).onChange((value) => {
   // Update the uniform buffer when the value changes
-  updateFloatUniform(value);
+  updateFloatUniform(uLowerRadiusBuffer, value);
+});
+gui.add(params, 'uAllRadiusValue', 0.0, 1.0).step(0.01).onChange((value) => {
+  updateFloatUniform(uAllRadiusBuffer, value);
+});
+gui.add(params, 'uLengthValue', 0.0, 1.0).step(0.01).onChange((value) => {
+  // Update the uniform buffer when the value changes
+  updateFloatUniform(uLengthBuffer, value);
 });
 
-function updateFloatUniform(value: number) {
+function updateFloatUniform(buffer: GPUBuffer, value: number) {
   const updatedFloatArray = new Float32Array([value]); // Convert the value to a Float32Array
-  device.queue.writeBuffer(uTestBuffer, 0, updatedFloatArray.buffer, 0, updatedFloatArray.byteLength);
+  device.queue.writeBuffer(buffer, 0, updatedFloatArray.buffer, 0, updatedFloatArray.byteLength);
 }
 
 const adapter = await navigator.gpu?.requestAdapter({
@@ -147,21 +158,11 @@ for (let i = 0, j = 0; i < vertices.length / 3; i++) {
   new Uint16Array(indexBuffer.getMappedRange()).set(indices);
   indexBuffer.unmap();
 
-  // // Create buffer for vertex normals
-  // const vertexNormalBuffer = device.createBuffer({
-  //   size: vertexNormal.byteLength,
-  //   usage: GPUBufferUsage.VERTEX,
-  //   mappedAtCreation: true,
-  // });
-  // new Float32Array(vertexNormalBuffer.getMappedRange()).set(interleavedData);
-  // vertexNormalBuffer.unmap();
-
   return { vertexBuffer, indexBuffer, indexCount: indices.length };
 }
 
 // Call setupMesh and use the buffers in your render pass
 const { vertexBuffer, indexBuffer, indexCount } = await setupMesh();
-// console.log(vertexBuffer)
 
 
 // Create a vertex buffer from the cube data.
@@ -190,7 +191,17 @@ const projectionBuffer = device.createBuffer({
   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 });
 
-const uTestBuffer = device.createBuffer({
+const uLowerRadiusBuffer = device.createBuffer({
+  size: 4, //  the size should be 4 bytes for a single float
+  usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+});
+
+const uAllRadiusBuffer = device.createBuffer({
+  size: 4, //  the size should be 4 bytes for a single float
+  usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+});
+
+const uLengthBuffer = device.createBuffer({
   size: 4, //  the size should be 4 bytes for a single float
   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 });
@@ -203,8 +214,10 @@ const canvasSizeBuffer = device.createBuffer({
 const canvasSizeArray = new Float32Array([canvas.width, canvas.height]);
 device.queue.writeBuffer(canvasSizeBuffer, 0, canvasSizeArray.buffer, 0, canvasSizeArray.byteLength);
 
-const updatedFloatArray = new Float32Array([1.0]); // Set the default value of uTestValue to 1.0
-device.queue.writeBuffer(uTestBuffer, 0, updatedFloatArray.buffer, 0, updatedFloatArray.byteLength);
+const updatedFloatArray = new Float32Array([1.0]); // Set the default value of uLowerRadiusValue to 1.0
+device.queue.writeBuffer(uLowerRadiusBuffer, 0, updatedFloatArray.buffer, 0, updatedFloatArray.byteLength);
+device.queue.writeBuffer(uAllRadiusBuffer, 0, updatedFloatArray.buffer, 0, updatedFloatArray.byteLength);
+device.queue.writeBuffer(uLengthBuffer, 0, updatedFloatArray.buffer, 0, updatedFloatArray.byteLength);
 
 const bindGroupLayout = device.createBindGroupLayout({
   entries: [
@@ -213,8 +226,10 @@ const bindGroupLayout = device.createBindGroupLayout({
     { binding: 2, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform' } }, // Projection Matrix
     { binding: 3, visibility: GPUShaderStage.FRAGMENT, sampler: { type: 'filtering' } },
     { binding: 4, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: 'float' } },
-    { binding: 5, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } }, // uTestValue
+    { binding: 5, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } }, // uLowerRadiusValue
     { binding: 6, visibility: GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } }, 
+    { binding: 7, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } }, // uAllRadiusValue
+    { binding: 8, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } }, // uAllRadiusValue
   ],
 });
 
@@ -337,11 +352,19 @@ const uniformBindGroup = device.createBindGroup({
     },
     {
       binding: 5,
-      resource: { buffer: uTestBuffer },
+      resource: { buffer: uLowerRadiusBuffer },
     },
     {
       binding: 6,
       resource: { buffer: canvasSizeBuffer },
+    },
+    {
+      binding: 7,
+      resource: { buffer: uAllRadiusBuffer },
+    },
+    {
+      binding: 8,
+      resource: { buffer: uLengthBuffer },
     },
   ],
 });

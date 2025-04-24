@@ -19,8 +19,8 @@ export async function loadGLB(url: string): Promise<{ vertices: Float32Array; in
   }
 
   const vertices = new Float32Array(positionAccessor!.getArray()!);
-  const uvs = new Float32Array(uvAccessor!.getArray()!);
   const indices = new Uint16Array(indicesAccessor!.getArray()!);
+  const uvs = new Float32Array(uvAccessor!.getArray()!);
   const vertexNormal = new Float32Array(normalAccessor!.getArray()!);
 
   // console.log(primitive.getAttribute('NORMAL')!.getArray()!);
