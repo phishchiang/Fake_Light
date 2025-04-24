@@ -434,7 +434,7 @@ function frame() {
     ViewProjection.byteLength
   );
 
-  renderPassDescriptor.colorAttachments[0].view = context
+  (renderPassDescriptor.colorAttachments as GPURenderPassColorAttachment[])[0].view = context
     .getCurrentTexture()
     .createView();
 
