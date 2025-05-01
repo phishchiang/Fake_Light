@@ -75,8 +75,6 @@ fn fragment_main(input: FragmentInput) -> @location(0) vec4f {
   let uvDivided = ((input.frag_uv.x + (speed)) % divisorWidth) * (1.0/divisorWidth);
   let sideGradient = smoothstep(0.0, 0.5, uvDivided) * (1.0 - smoothstep(0.5, 1.0, uvDivided));
 
-  let v_normal
-
   // var finalColor: vec4f = textureSample( myTexture, mySampler, input.frag_uv );
   // var finalColor = vec4f( input.Position.x/uniforms.canvasSize.x, input.Position.y/uniforms.canvasSize.y, 0.0, 1.0 ); // Red color
   var finalColor = vec4f( sideGradient, 0.0, 0.0, 1.0 ); // Red color

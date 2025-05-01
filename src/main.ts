@@ -26,15 +26,14 @@ export class WebGPUApp{
     uOverallRadius: number; 
     uConeRadius: number; 
     uLightLength: number; 
-    uTime: number; 
   } = {
     type: 'arcball',
     uOverallRadius: 0.0,
     uConeRadius: 1.0,
     uLightLength: 1.0,
-    uTime: 0.0,
   };
   private gui: GUI;
+  private uTime: number = 0.0;
   private lastFrameMS: number;
   private demoVerticesBuffer!: GPUBuffer;
   private loadVerticesBuffer!: GPUBuffer;
@@ -211,7 +210,7 @@ export class WebGPUApp{
     uniformData.set([this.params.uOverallRadius], uniformConfig.uOverallRadius.offset);
     uniformData.set([this.params.uConeRadius], uniformConfig.uConeRadius.offset);
     uniformData.set([this.params.uLightLength], uniformConfig.uLightLength.offset);
-    uniformData.set([this.params.uTime], uniformConfig.uTime.offset);
+    uniformData.set([this.uTime], uniformConfig.uTime.offset);
     this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData.buffer, 0, uniformData.byteLength);
     // console.log('print out the uniformData : ', uniformData);
   }
@@ -420,8 +419,8 @@ export class WebGPUApp{
     this.lastFrameMS = now;
 
     // Update the uniform uTime value
-    this.params.uTime += deltaTime;
-    const uTimeFloatArray = new Float32Array([this.params.uTime]);
+    this.uTime += deltaTime;
+    const uTimeFloatArray = new Float32Array([this.uTime]);
     this.device.queue.writeBuffer(this.uniformBuffer, uniformConfig.uTime.offset * 4, uTimeFloatArray.buffer, 0, uTimeFloatArray.byteLength);
 
     this.viewMatrix = this.getViewMatrix(deltaTime);
