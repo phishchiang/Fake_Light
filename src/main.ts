@@ -206,13 +206,14 @@ export class WebGPUApp{
     uniformData.set(this.modelMatrix, uniformConfig.modelMatrix.offset); // Model matrix
     uniformData.set(this.viewMatrix, uniformConfig.viewMatrix.offset); // View matrix
     uniformData.set(this.projectionMatrix, uniformConfig.projectionMatrix.offset); // Projection matrix
+    uniformData.set(WebGPUApp.CAMERA_POSITION, uniformConfig.cameraPosition.offset); 
     uniformData.set([this.canvas.width, this.canvas.height], uniformConfig.canvasSize.offset);
     uniformData.set([this.params.uOverallRadius], uniformConfig.uOverallRadius.offset);
     uniformData.set([this.params.uConeRadius], uniformConfig.uConeRadius.offset);
     uniformData.set([this.params.uLightLength], uniformConfig.uLightLength.offset);
     uniformData.set([this.uTime], uniformConfig.uTime.offset);
     this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData.buffer, 0, uniformData.byteLength);
-    // console.log('print out the uniformData : ', uniformData);
+    console.log('print out the uniformData : ', uniformData);
   }
 
   private setupEventListeners() {
@@ -424,9 +425,11 @@ export class WebGPUApp{
     this.device.queue.writeBuffer(this.uniformBuffer, uniformConfig.uTime.offset * 4, uTimeFloatArray.buffer, 0, uTimeFloatArray.byteLength);
 
     this.viewMatrix = this.getViewMatrix(deltaTime);
-
-    // View mat4x4<f32> 16 value 64 bytes, index 16
     this.device.queue.writeBuffer(this.uniformBuffer, 64, this.viewMatrix.buffer, 0, this.viewMatrix.byteLength);
+
+    const cameraPosition = this.cameras[this.params.type].position; // Get the current camera position
+    const cameraPositionArray = new Float32Array([cameraPosition[0], cameraPosition[1], cameraPosition[2]]);
+    this.device.queue.writeBuffer( this.uniformBuffer, uniformConfig.cameraPosition.offset * 4, cameraPositionArray.buffer, 0, cameraPositionArray.byteLength );
 
     (this.renderPassDescriptor.colorAttachments as GPURenderPassColorAttachment[])[0].view = this.context
     .getCurrentTexture()

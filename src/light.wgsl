@@ -2,6 +2,7 @@ struct Uniforms {
   modelMatrix : mat4x4<f32>,
   viewMatrix : mat4x4<f32>,
   projectionMatrix : mat4x4<f32>,
+  uCamPosition : vec3f,
   canvasSize : vec2f,
   uOverallRadius : f32,
   uConeRadius : f32,

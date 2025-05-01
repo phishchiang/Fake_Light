@@ -1,35 +1,38 @@
 export const uniformConfig = {
     modelMatrix:{
-        size: 16,          // Size of the model matrix (4x4 matrix)
-        offset: 0,         // Offset for model matrix in the uniform buffer
+        size: 16,
+        offset: 0,
     },          
     viewMatrix:{
-        size: 16,          // Size of the view matrix (4x4 matrix)
-        offset: 16,        // Offset for view matrix in the uniform buffer
+        size: 16,
+        offset: 16,
     },
     projectionMatrix:{
-        size: 16,          // Size of the projection matrix (4x4 matrix)
-        offset: 32,        // Offset for projection matrix in the uniform buffer
+        size: 16,
+        offset: 32,
     },  
+    cameraPosition: { 
+        size: 4, // 3D position + 1 padding
+        offset: 48, 
+    },
     canvasSize: {
-        size: 2,            // Size of the canvas size (vec2)
-        offset: 48,         // Offset for canvas size in the uniform buffer
+        size: 2,
+        offset: 52,
     }, 
     uOverallRadius: {
-        size: 1,            // Size of the test value (float)
-        offset: 50,         // Offset for uTestValue in the uniform buffer
+        size: 1,
+        offset: 54,
     },
     uConeRadius: {
-        size: 1,            // Size of the test value (float)
-        offset: 51,         // Offset for uTestValue_02 in the uniform buffer
+        size: 1,
+        offset: 55,
     },
     uLightLength: {
-        size: 1,            // Size of the test value (float)
-        offset: 52,         // Offset for uTestValue_02 in the uniform buffer
+        size: 1,
+        offset: 56,
     },
     uTime: {
-        size: 1,            // Size of the test value (float)
-        offset: 53,         // Offset for uTestValue_02 in the uniform buffer
+        size: 1,
+        offset: 57,
     },
-    // Add more offsets as needed
   };
