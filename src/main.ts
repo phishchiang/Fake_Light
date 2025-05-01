@@ -23,14 +23,14 @@ export class WebGPUApp{
   private aspect!: number;
   private params: { 
     type: 'arcball' | 'WASD'; 
-    uTestValue: number; 
-    uTestValue_02: number; 
-    uTestValue_03: number; 
+    uOverallRadius: number; 
+    uConeRadius: number; 
+    uLightLength: number; 
   } = {
     type: 'arcball',
-    uTestValue: 1.0,
-    uTestValue_02: 1.0,
-    uTestValue_03: 1.0,
+    uOverallRadius: 0.0,
+    uConeRadius: 1.0,
+    uLightLength: 1.0,
   };
   private gui: GUI;
   private lastFrameMS: number;
@@ -206,9 +206,9 @@ export class WebGPUApp{
     uniformData.set(this.viewMatrix, uniformConfig.viewMatrix.offset); // View matrix
     uniformData.set(this.projectionMatrix, uniformConfig.projectionMatrix.offset); // Projection matrix
     uniformData.set([this.canvas.width, this.canvas.height], uniformConfig.canvasSize.offset);
-    uniformData.set([this.params.uTestValue], uniformConfig.uTestValue.offset);
-    uniformData.set([this.params.uTestValue_02], uniformConfig.uTestValue_02.offset);
-    uniformData.set([this.params.uTestValue_03], uniformConfig.uTestValue_03.offset);
+    uniformData.set([this.params.uOverallRadius], uniformConfig.uOverallRadius.offset);
+    uniformData.set([this.params.uConeRadius], uniformConfig.uConeRadius.offset);
+    uniformData.set([this.params.uLightLength], uniformConfig.uLightLength.offset);
     this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData.buffer, 0, uniformData.byteLength);
     // console.log('print out the uniformData : ', uniformData);
   }
@@ -250,36 +250,29 @@ export class WebGPUApp{
       this.cameras[this.newCameraType].matrix = this.cameras[this.oldCameraType].matrix;
       this.oldCameraType = this.newCameraType
     });
-    /*
-    this.gui.add(this.params, 'uTestValue', 0.0, 1.0).step(0.01).onChange((value) => {
-      this.updateFloatUniform( 'uTestValue', value );
+    this.gui.add(this.params, 'uOverallRadius', -0.75, 0.75).step(0.01).onChange((value) => {
+      this.updateFloatUniform( 'uOverallRadius', value );
     });
-    this.gui.add(this.params, 'uTestValue_02', 0.0, 1.0).step(0.01).onChange((value) => {
-      this.updateFloatUniform( 'uTestValue_02', value );
+    this.gui.add(this.params, 'uConeRadius', 0.0, 5.0).step(0.01).onChange((value) => {
+      this.updateFloatUniform( 'uConeRadius', value );
     });
-    */
-    Object.keys(this.params).forEach((key) => {
-      const paramKey = key as keyof typeof this.params;
-  
-      if (typeof this.params[paramKey] === 'number') {
-        this.gui.add(this.params, paramKey, 0.0, 1.0).step(0.01).onChange((value) => {
-          this.updateFloatUniform(paramKey, value);
-        });
-      }
+    this.gui.add(this.params, 'uLightLength', 0.0, 10.0).step(0.01).onChange((value) => {
+      this.updateFloatUniform( 'uLightLength', value );
     });
+    
   }
 
   private updateFloatUniform(key: keyof typeof this.params, value: number) {
     let offset: number = 0;
     switch (key) {
-      case 'uTestValue':
-        offset = uniformConfig.uTestValue.offset * 4;
+      case 'uOverallRadius':
+        offset = uniformConfig.uOverallRadius.offset * 4;
         break;
-      case 'uTestValue_02':
-        offset = uniformConfig.uTestValue_02.offset * 4;;
+      case 'uConeRadius':
+        offset = uniformConfig.uConeRadius.offset * 4;;
         break;
-      case 'uTestValue_03':
-        offset = uniformConfig.uTestValue_03.offset * 4;;
+      case 'uLightLength':
+        offset = uniformConfig.uLightLength.offset * 4;;
         break;
       // Add more cases as needed
       default:

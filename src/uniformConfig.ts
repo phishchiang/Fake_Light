@@ -15,15 +15,15 @@ export const uniformConfig = {
         size: 2,            // Size of the canvas size (vec2)
         offset: 48,         // Offset for canvas size in the uniform buffer
     }, 
-    uTestValue: {
+    uOverallRadius: {
         size: 1,            // Size of the test value (float)
         offset: 50,         // Offset for uTestValue in the uniform buffer
     },
-    uTestValue_02: {
+    uConeRadius: {
         size: 1,            // Size of the test value (float)
         offset: 51,         // Offset for uTestValue_02 in the uniform buffer
     },
-    uTestValue_03: {
+    uLightLength: {
         size: 1,            // Size of the test value (float)
         offset: 52,         // Offset for uTestValue_02 in the uniform buffer
     },
