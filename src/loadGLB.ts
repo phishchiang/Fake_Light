@@ -1,6 +1,6 @@
 import { NodeIO } from '@gltf-transform/core';
 
-export async function loadGLB(url: string): Promise<{ vertices: Float32Array; indices: Uint16Array; uvs: Float32Array ; vertexNormal: Float32Array }> {
+export async function loadGLB(url: string): Promise<{ vertices: Float32Array; indices?: Uint16Array; vertexNormal?: Float32Array; uvs?: Float32Array; colors?: Float32Array }> {
   const io = new NodeIO();
   const response = await fetch(url);
   const arrayBuffer = await response.arrayBuffer();
@@ -12,19 +12,19 @@ export async function loadGLB(url: string): Promise<{ vertices: Float32Array; in
   const positionAccessor = primitive.getAttribute('POSITION');
   const uvAccessor = primitive.getAttribute('TEXCOORD_0');
   const normalAccessor = primitive.getAttribute('NORMAL');
+  const colorAccessor = primitive.getAttribute('COLOR_0');
   const indicesAccessor = primitive.getIndices();
 
-  if (!positionAccessor || !uvAccessor || !indicesAccessor || !normalAccessor) {
-    throw new Error('Missing POSITION, TEXCOORD_0, or INDICES attribute in the glTF file.');
+  if (!positionAccessor) {
+    throw new Error('Missing POSITION in the glTF file.');
   }
 
   const vertices = new Float32Array(positionAccessor!.getArray()!);
-  const indices = new Uint16Array(indicesAccessor!.getArray()!);
-  const uvs = new Float32Array(uvAccessor!.getArray()!);
-  const vertexNormal = new Float32Array(normalAccessor!.getArray()!);
+  const indices = indicesAccessor ? new Uint16Array(indicesAccessor.getArray()!) : undefined;
+  const vertexNormal = normalAccessor ? new Float32Array(normalAccessor.getArray()!) : undefined;
+  const uvs = uvAccessor ? new Float32Array(uvAccessor.getArray()!) : undefined;
+  const colors = colorAccessor ? new Float32Array(colorAccessor.getArray()!) : undefined;
 
-  // console.log(primitive.getAttribute('NORMAL')!.getArray()!);
-  // console.log(mesh);
-
-  return { vertices, indices, uvs, vertexNormal };
+// console.log(colorAccessor.getType()) // to know what type of data from GLB
+  return { vertices, indices, vertexNormal, uvs, colors };
 }

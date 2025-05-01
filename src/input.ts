@@ -41,6 +41,10 @@ export function createInputHandler(
   };
   let mouseDown = false;
 
+  // Track touch points for pinch-to-zoom
+  const touchPoints = new Map<number, { x: number; y: number }>();
+  let initialPinchDistance = 0;
+
   const setDigital = (e: KeyboardEvent, value: boolean) => {
     switch (e.code) {
       case 'KeyW':
@@ -81,12 +85,21 @@ export function createInputHandler(
   window.addEventListener('keydown', (e) => setDigital(e, true));
   window.addEventListener('keyup', (e) => setDigital(e, false));
 
-  canvas.style.touchAction = 'pinch-zoom';
-  canvas.addEventListener('pointerdown', () => {
+  canvas.style.touchAction = 'none';
+  canvas.addEventListener('pointerdown', (e) => {
     mouseDown = true;
+    if (e.pointerType === 'touch') {
+      touchPoints.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+    e.preventDefault(); // Prevent default behavior
   });
-  canvas.addEventListener('pointerup', () => {
+  canvas.addEventListener('pointerup', (e) => {
     mouseDown = false;
+    if (e.pointerType === 'touch') {
+      touchPoints.delete(e.pointerId);
+      initialPinchDistance = 0; // Reset pinch distance when fingers are lifted
+    }
+    e.preventDefault(); // Prevent default behavior
   });
   canvas.addEventListener('pointermove', (e) => {
     mouseDown = e.pointerType == 'mouse' ? (e.buttons & 1) !== 0 : true;
@@ -94,17 +107,41 @@ export function createInputHandler(
       analog.x += e.movementX;
       analog.y += e.movementY;
     }
+
+    if (e.pointerType === 'touch' && touchPoints.has(e.pointerId)) {
+      touchPoints.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      if (touchPoints.size === 2) {
+        const points = Array.from(touchPoints.values());
+        const dx = points[0].x - points[1].x;
+        const dy = points[0].y - points[1].y;
+        const currentPinchDistance = Math.sqrt(dx * dx + dy * dy);
+
+        if (initialPinchDistance === 0) {
+          initialPinchDistance = currentPinchDistance; // Set initial distance
+        } else {
+          const pinchDelta = currentPinchDistance - initialPinchDistance;
+          analog.zoom += pinchDelta * -0.05; // Adjust zoom sensitivity
+          initialPinchDistance = currentPinchDistance; // Update for next frame
+        }
+      }
+    }
+    e.preventDefault(); // Prevent default behavior
   });
   canvas.addEventListener(
     'wheel',
     (e) => {
       mouseDown = (e.buttons & 1) !== 0;
+      // Scroll zooms in/out without mouse down.
+      analog.zoom += Math.sign(e.deltaY);
+      e.preventDefault();
+      e.stopPropagation();
       if (mouseDown) {
         // The scroll value varies substantially between user agents / browsers.
         // Just use the sign.
-        analog.zoom += Math.sign(e.deltaY);
-        e.preventDefault();
-        e.stopPropagation();
+        // analog.zoom += Math.sign(e.deltaY);
+        // e.preventDefault();
+        // e.stopPropagation();
       }
     },
     { passive: false }
