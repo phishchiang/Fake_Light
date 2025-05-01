@@ -27,5 +27,9 @@ export const uniformConfig = {
         size: 1,            // Size of the test value (float)
         offset: 52,         // Offset for uTestValue_02 in the uniform buffer
     },
+    uTime: {
+        size: 1,            // Size of the test value (float)
+        offset: 53,         // Offset for uTestValue_02 in the uniform buffer
+    },
     // Add more offsets as needed
   };

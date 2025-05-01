@@ -6,6 +6,7 @@ struct Uniforms {
   uOverallRadius : f32,
   uConeRadius : f32,
   uLightLength : f32,
+  uTime : f32,
 };
 
 @group(0) @binding(0) var<uniform> uniforms : Uniforms;
@@ -66,9 +67,19 @@ struct FragmentInput {
 
 @fragment
 fn fragment_main(input: FragmentInput) -> @location(0) vec4f {
-  var finalColor: vec4f = textureSample( myTexture, mySampler, input.frag_uv );
+
+
+  let divisorWidth = 0.25; // Number should be divisible by 1.0
+  let speed = uniforms.uTime * 0.1;
+
+  let uvDivided = ((input.frag_uv.x + (speed)) % divisorWidth) * (1.0/divisorWidth);
+  let sideGradient = smoothstep(0.0, 0.5, uvDivided) * (1.0 - smoothstep(0.5, 1.0, uvDivided));
+
+  let v_normal
+
+  // var finalColor: vec4f = textureSample( myTexture, mySampler, input.frag_uv );
   // var finalColor = vec4f( input.Position.x/uniforms.canvasSize.x, input.Position.y/uniforms.canvasSize.y, 0.0, 1.0 ); // Red color
-  // var finalColor = vec4f( input.frag_normal.x, input.frag_normal.y, input.frag_normal.z, 1.0 ); // Red color
+  var finalColor = vec4f( sideGradient, 0.0, 0.0, 1.0 ); // Red color
   // finalColor *= uniforms.uOverallRadius;
   return finalColor;
 }
