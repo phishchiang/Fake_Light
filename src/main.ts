@@ -29,6 +29,7 @@ export class WebGPUApp{
     uLightStep: number; 
     uLightSpeed: number; 
     uLightIntensity: number; 
+    uLightColor: [number, number, number]; 
   } = {
     type: 'arcball',
     uOverallRadius: 0.0,
@@ -37,6 +38,7 @@ export class WebGPUApp{
     uLightStep: 4.0,
     uLightSpeed: 1.0,
     uLightIntensity: 1.0,
+    uLightColor: [255, 255, 255],
   };
   private gui: GUI;
   private uTime: number = 0.0;
@@ -58,8 +60,8 @@ export class WebGPUApp{
     digital: { forward: boolean, backward: boolean, left: boolean, right: boolean, up: boolean, down: boolean, };
     analog: { x: number; y: number; zoom: number; touching: boolean };
   };
-  private static readonly CLEAR_COLOR = [0.1, 0.1, 0.1, 1.0];
-  private static readonly CAMERA_POSITION = vec3.create(3, 2, 5);
+  private static readonly CLEAR_COLOR = [0.15, 0.15, 0.15, 1.0];
+  private static readonly CAMERA_POSITION = vec3.create(3, 2, 10);
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -221,6 +223,7 @@ export class WebGPUApp{
     uniformData.set([this.params.uLightStep], uniformConfig.uLightStep.offset);
     uniformData.set([this.params.uLightSpeed], uniformConfig.uLightSpeed.offset);
     uniformData.set([this.params.uLightIntensity], uniformConfig.uLightIntensity.offset);
+    uniformData.set(this.params.uLightColor, uniformConfig.uLightColor.offset);
     this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData.buffer, 0, uniformData.byteLength);
     console.log('print out the uniformData : ', uniformData);
   }
@@ -257,11 +260,11 @@ export class WebGPUApp{
   }
 
   private initializeGUI() {
-    this.gui.add(this.params, 'type', ['arcball', 'WASD']).onChange(() => {
-      this.newCameraType = this.params.type;
-      this.cameras[this.newCameraType].matrix = this.cameras[this.oldCameraType].matrix;
-      this.oldCameraType = this.newCameraType
-    });
+    // this.gui.add(this.params, 'type', ['arcball', 'WASD']).onChange(() => {
+    //   this.newCameraType = this.params.type;
+    //   this.cameras[this.newCameraType].matrix = this.cameras[this.oldCameraType].matrix;
+    //   this.oldCameraType = this.newCameraType
+    // });
     this.gui.add(this.params, 'uOverallRadius', -0.75, 0.75).step(0.01).onChange((value) => {
       this.updateFloatUniform( 'uOverallRadius', value );
     });
@@ -281,6 +284,12 @@ export class WebGPUApp{
       this.updateFloatUniform( 'uLightIntensity', value );
     });
     
+    // Add color picker
+    this.gui.addColor(this.params, 'uLightColor').onChange((value) => {
+      const normalizedColor = value.map((v: number) => v / 255.0);
+      const colorArray = new Float32Array(normalizedColor);
+      this.device.queue.writeBuffer( this.uniformBuffer, uniformConfig.uLightColor.offset * 4, colorArray.buffer, 0, colorArray.byteLength );
+    });
   }
 
   private updateFloatUniform(key: keyof typeof this.params, value: number) {

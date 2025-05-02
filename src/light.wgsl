@@ -11,6 +11,7 @@ struct Uniforms {
   uLightStep : f32,
   uLightSpeed : f32,
   uLightIntensity : f32,
+  uLightColor : vec3f,
 };
 
 @group(0) @binding(0) var<uniform> uniforms : Uniforms;
@@ -50,7 +51,7 @@ fn vertex_main(input: VertexInput) -> VertexOutput {
     1.0, 0.0, 0.0, 0.0,  // Scale X by 1.0
     0.0, 1.0, 0.0, 0.0,  // Scale Y by 1.0
     0.0, 0.0, 1.0, 0.0,  // Scale Z by 1.0
-    0.0, -uniforms.uLightLength, 0.0, 1.0   // Translation along Y-axis
+    0.0, -uniforms.uLightLength - 2.0, 0.0, 1.0   // Translation along Y-axis
   );
   var transformedModelMatrix = uniforms.modelMatrix;
   if (input.uv.y > 0.5) {
@@ -87,12 +88,13 @@ fn fragment_main(input: FragmentInput) -> @location(0) vec4f {
 
   let fade_vertical = pow(1.0 - input.frag_uv.y, 2.0);
 
-  var fadedColor = sideGradient * fresnel * fade_vertical * uniforms.uLightIntensity;
+  var fadeMultiply = sideGradient * fresnel * fade_vertical * uniforms.uLightIntensity;
+  var fadedColor = fadeMultiply * vec4f(uniforms.uLightColor, fadeMultiply);
 
   // var finalColor: vec4f = textureSample( myTexture, mySampler, input.frag_uv );
   // var finalColor = vec4f( input.Position.x/uniforms.canvasSize.x, input.Position.y/uniforms.canvasSize.y, 0.0, 1.0 ); // Red color
   // var finalColor = vec4f( sideGradient, 0.0, 0.0, 1.0 ); // Red color
-  var finalColor = vec4f( fadedColor ); // Red color
+  var finalColor = fadedColor; // Red color
   // finalColor *= uniforms.uOverallRadius;
   return finalColor;
 }

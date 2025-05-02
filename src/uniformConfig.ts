@@ -47,4 +47,8 @@ export const uniformConfig = {
         size: 1,
         offset: 60,
     },
+    uLightColor: {
+        size: 4,
+        offset: 64,
+    },
   };
