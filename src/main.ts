@@ -26,11 +26,17 @@ export class WebGPUApp{
     uOverallRadius: number; 
     uConeRadius: number; 
     uLightLength: number; 
+    uLightStep: number; 
+    uLightSpeed: number; 
+    uLightIntensity: number; 
   } = {
     type: 'arcball',
     uOverallRadius: 0.0,
     uConeRadius: 1.0,
     uLightLength: 1.0,
+    uLightStep: 4.0,
+    uLightSpeed: 1.0,
+    uLightIntensity: 1.0,
   };
   private gui: GUI;
   private uTime: number = 0.0;
@@ -212,6 +218,9 @@ export class WebGPUApp{
     uniformData.set([this.params.uConeRadius], uniformConfig.uConeRadius.offset);
     uniformData.set([this.params.uLightLength], uniformConfig.uLightLength.offset);
     uniformData.set([this.uTime], uniformConfig.uTime.offset);
+    uniformData.set([this.params.uLightStep], uniformConfig.uLightStep.offset);
+    uniformData.set([this.params.uLightSpeed], uniformConfig.uLightSpeed.offset);
+    uniformData.set([this.params.uLightIntensity], uniformConfig.uLightIntensity.offset);
     this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData.buffer, 0, uniformData.byteLength);
     console.log('print out the uniformData : ', uniformData);
   }
@@ -262,6 +271,15 @@ export class WebGPUApp{
     this.gui.add(this.params, 'uLightLength', 0.0, 10.0).step(0.01).onChange((value) => {
       this.updateFloatUniform( 'uLightLength', value );
     });
+    this.gui.add(this.params, 'uLightStep', 1.0, 10.0).step(1.0).onChange((value) => {
+      this.updateFloatUniform( 'uLightStep', value );
+    });
+    this.gui.add(this.params, 'uLightSpeed', 0.0, 5.0).step(0.01).onChange((value) => {
+      this.updateFloatUniform( 'uLightSpeed', value );
+    });
+    this.gui.add(this.params, 'uLightIntensity', 0.0, 10.0).step(0.01).onChange((value) => {
+      this.updateFloatUniform( 'uLightIntensity', value );
+    });
     
   }
 
@@ -276,6 +294,15 @@ export class WebGPUApp{
         break;
       case 'uLightLength':
         offset = uniformConfig.uLightLength.offset * 4;;
+        break;
+      case 'uLightStep':
+        offset = uniformConfig.uLightStep.offset * 4;;
+        break;
+      case 'uLightSpeed':
+        offset = uniformConfig.uLightSpeed.offset * 4;;
+        break;
+      case 'uLightIntensity':
+        offset = uniformConfig.uLightIntensity.offset * 4;;
         break;
       // Add more cases as needed
       default:

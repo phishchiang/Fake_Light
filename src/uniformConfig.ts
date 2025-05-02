@@ -35,4 +35,16 @@ export const uniformConfig = {
         size: 1,
         offset: 57,
     },
+    uLightStep: {
+        size: 1,
+        offset: 58,
+    },
+    uLightSpeed: {
+        size: 1,
+        offset: 59,
+    },
+    uLightIntensity: {
+        size: 1,
+        offset: 60,
+    },
   };

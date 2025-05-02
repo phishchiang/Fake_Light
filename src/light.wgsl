@@ -8,6 +8,9 @@ struct Uniforms {
   uConeRadius : f32,
   uLightLength : f32,
   uTime : f32,
+  uLightStep : f32,
+  uLightSpeed : f32,
+  uLightIntensity : f32,
 };
 
 @group(0) @binding(0) var<uniform> uniforms : Uniforms;
@@ -76,20 +79,20 @@ fn fragment_main(input: FragmentInput) -> @location(0) vec4f {
   var fresnel = pow(dot(input.frag_normal, cam_dir) * 1.0, 2.0);
   fresnel = clamp(fresnel, 0.0, 1.0);
 
-  let divisorWidth = 0.2; // Number should be divisible by 1.0
-  let speed = uniforms.uTime * 0.1;
+  let light_step = uniforms.uLightStep; // Number should be divisible by 1.0
+  let speed = uniforms.uTime * 0.1 * uniforms.uLightSpeed; // Speed of the light movement
 
-  let uvDivided = ((input.frag_uv.x + (speed)) % divisorWidth) * (1.0/divisorWidth);
+  let uvDivided = ((input.frag_uv.x + (speed)) % (1.0/light_step)) * light_step;
   let sideGradient = smoothstep(0.0, 0.5, uvDivided) * (1.0 - smoothstep(0.5, 1.0, uvDivided));
 
   let fade_vertical = pow(1.0 - input.frag_uv.y, 2.0);
 
-  var lightColor = sideGradient * fresnel * fade_vertical;
+  var fadedColor = sideGradient * fresnel * fade_vertical * uniforms.uLightIntensity;
 
   // var finalColor: vec4f = textureSample( myTexture, mySampler, input.frag_uv );
   // var finalColor = vec4f( input.Position.x/uniforms.canvasSize.x, input.Position.y/uniforms.canvasSize.y, 0.0, 1.0 ); // Red color
   // var finalColor = vec4f( sideGradient, 0.0, 0.0, 1.0 ); // Red color
-  var finalColor = vec4f( lightColor ); // Red color
+  var finalColor = vec4f( fadedColor ); // Red color
   // finalColor *= uniforms.uOverallRadius;
   return finalColor;
 }
