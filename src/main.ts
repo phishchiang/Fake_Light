@@ -393,6 +393,20 @@ export class WebGPUApp{
         targets: [
           {
             format: presentationFormat,
+            // Enable Transparency
+            blend: {
+              color: {
+                srcFactor: 'src-alpha',
+                dstFactor: 'one-minus-src-alpha',
+                operation: 'add',
+              },
+              alpha: {
+                srcFactor: 'one',
+                dstFactor: 'one-minus-src-alpha',
+                operation: 'add',
+              },
+            },
+            writeMask: GPUColorWrite.ALL,
           },
         ],
       },

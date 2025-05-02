@@ -24,12 +24,15 @@ struct VertexInput {
 struct VertexOutput {
   @builtin(position) Position : vec4f,
   @location(0) frag_normal : vec3f,
-  // @location(1) frag_color : vec4f,
+  @location(1) frag_model_position : vec3f,
   @location(2) frag_uv : vec2f,
 }
 
 @vertex
 fn vertex_main(input: VertexInput) -> VertexOutput {
+
+  let model_normal = (uniforms.modelMatrix * vec4(input.normal, 0.0)).xyz;
+  let model_position = (uniforms.modelMatrix * vec4(input.position, 1.0)).xyz;
 
   // Scale the normal by uniforms.uOverallRadius
   let allRadiusNormal = input.normal * uniforms.uOverallRadius;
@@ -54,7 +57,7 @@ fn vertex_main(input: VertexInput) -> VertexOutput {
   return VertexOutput(
     uniforms.projectionMatrix * uniforms.viewMatrix * transformedModelMatrix * new_position, 
     input.normal,
-    // input.color,
+    model_position,
     input.uv,
   );
 }
@@ -62,23 +65,31 @@ fn vertex_main(input: VertexInput) -> VertexOutput {
 struct FragmentInput {
   @builtin(position) Position : vec4f,
   @location(0) frag_normal : vec3f,
-  // @location(1) frag_color : vec4f,
+  @location(1) frag_model_position : vec3f,
   @location(2) frag_uv : vec2f,
 }
 
 @fragment
 fn fragment_main(input: FragmentInput) -> @location(0) vec4f {
 
+  let cam_dir = normalize(uniforms.uCamPosition - input.frag_model_position);
+  var fresnel = pow(dot(input.frag_normal, cam_dir) * 1.0, 2.0);
+  fresnel = clamp(fresnel, 0.0, 1.0);
 
-  let divisorWidth = 0.25; // Number should be divisible by 1.0
+  let divisorWidth = 0.2; // Number should be divisible by 1.0
   let speed = uniforms.uTime * 0.1;
 
   let uvDivided = ((input.frag_uv.x + (speed)) % divisorWidth) * (1.0/divisorWidth);
   let sideGradient = smoothstep(0.0, 0.5, uvDivided) * (1.0 - smoothstep(0.5, 1.0, uvDivided));
 
+  let fade_vertical = pow(1.0 - input.frag_uv.y, 2.0);
+
+  var lightColor = sideGradient * fresnel * fade_vertical;
+
   // var finalColor: vec4f = textureSample( myTexture, mySampler, input.frag_uv );
   // var finalColor = vec4f( input.Position.x/uniforms.canvasSize.x, input.Position.y/uniforms.canvasSize.y, 0.0, 1.0 ); // Red color
-  var finalColor = vec4f( sideGradient, 0.0, 0.0, 1.0 ); // Red color
+  // var finalColor = vec4f( sideGradient, 0.0, 0.0, 1.0 ); // Red color
+  var finalColor = vec4f( lightColor ); // Red color
   // finalColor *= uniforms.uOverallRadius;
   return finalColor;
 }
