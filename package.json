@@ -17,7 +17,6 @@
   "dependencies": {
     "@gltf-transform/core": "^4.1.3",
     "dat.gui": "^0.7.9",
-    "webgl-obj-loader": "^2.0.8",
     "wgpu-matrix": "^3.4.0"
   }
 }

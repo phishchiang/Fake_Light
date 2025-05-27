@@ -452,7 +452,11 @@ export class WebGPUApp{
       },
       depthStencil: {
         format: 'depth24plus',
-        depthWriteEnabled: true,
+        /*
+          Depth Write: Should be disabled for transparent objects.
+          Depth Test: Should be enabled (so farther transparent objects don’t draw over nearer ones)..
+        */
+        depthWriteEnabled: false,
         depthCompare: 'less',
       },
     });
